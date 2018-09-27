@@ -82,7 +82,7 @@ def prep_dataset(path):
 
 
 
-@click.command(help="Prepare DSM data for wofs.")
+@click.command(help="Prepare metadata for indexing into a datacube.")
 @click.argument('dataloc',
                 type=click.Path(exists=True, readable=True),
                 nargs=-1)
