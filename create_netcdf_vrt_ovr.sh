@@ -2,46 +2,95 @@
 
 # example
 #OVR_FIELDS="frequency count_wet count_clear"
-OVR_FIELDS="frequency"
-#OVR_GLOB='*2011_summary.nc'
-# OVR_OUTPUT='some_folder'
+OVR_FIELDS="bcdev"
+#OVR_GLOB='*FYsummary.nc'
+OVR_OUTPUT='.'
+SENSORS="ls7"
 # overview-build-all-vrt
 # overview-resample-all
 # overview-collate
 
-overview-list-netcdf-field () {
+# create yearly vrts
+ncdf-yearly-vrt () {
     local field=$1
+    local sensor=$2
 
-    for file in $(find annualstats -iname "${OVR_GLOB}"); do
+    for y in {1986..2018}; do
+        #y=2013
+
+        # wet season summary vrts
+        ## vrt_name=wofs_${y}-11_$((y + 1))-03_summary.vrt;
+
+        # dry season summary vrts
+        #vrt_name=wofs_${y}-04_${y}-10_summary.vrt;
+
+        vrt_name=${sensor}_tmad-${y}-${field}.vrt
+
+        if  [ ! -e vrt_name ]; then
+            # set this to gather together appropriate netcdfs
+            OVR_GLOB=*${y}0101*;
+
+            echo Creating vrt: "${vrt_name}"
+            ncdf-list-fields ${field} ${sensor} | xargs -x --max-args 2000 gdalbuildvrt ${vrt_name}
+
+        fi
+    done
+}
+
+ncdf-yearly-overviews () {
+    for y in {1986..2017}; do
+        local sensor=$1
+        local field=$2
+        # wet season summary vrts
+        #vrt_name=wofs_${y}-11_$((y + 1))-03_summary.vrt;
+
+        # dry season summary vrts
+        #vrt_name=wofs_${y}-04_${y}-10_summary.vrt;
+
+        vrt_name=${sensor}_tmad-${y}-${field}.vrt;
+        echo "Creating overviews for ${vrt_name}"
+
+        gdaladdo -r nearest ${vrt_name}  16 64 256 1024 2048
+    done
+}
+
+# list the netcdf files in the manner needed for gdalbuildvrt NETCDF:filename:band
+ncdf-list-fields () {
+    local field=$1
+    local folder=$2
+    for file in $(find ${folder} -iname "${OVR_GLOB}"); do
             echo "NETCDF:${file}:${field}"
     done
 }
 
-overview-list-netcdf-field-thisdir() {
+ncdf-list-fields-thisdir() {
     local field=$1
 
-    for file in $(find . -iname "${OVR_GLOB}" -maxdepth 1); do
+    for file in $(find ls5 -iname "${OVR_GLOB}" -maxdepth 1); do
             echo "NETCDF:${file}:${field}"
     done
 }
 
-overview-build-vrt () {
+# build vrt with list of files returned from overview-list-netcdf-field
+ncdf-build-vrt () {
     local field=$1
 
     echo building vrt for "$field" with glob "${OVR_GLOB}"
-    overview-list-netcdf-field "${field}" | xargs -x --max-args 2000 gdalbuildvrt "${OVR_OUTPUT}/${field}.vrt"
+    ncdf-list-fields "${field}" | xargs -x --max-args 2000 gdalbuildvrt "${OVR_OUTPUT}/${field}.vrt"
     echo done building vrt for "$field"
 }
 
-overview-resample () {
+# create overviews of vrt created
+ncdf-create-overviews () {
     local field=$1
 
     echo resampling "$field"
-    gdaladdo -r average "${OVR_OUTPUT}/${field}.vrt" 16 64 256 1024 2048
+    gdaladdo "${OVR_OUTPUT}/${field}.vrt" 16 64 256 1024 2048
     echo done resampling "$field"
 }
 
-overview-build-all-vrt () {
+# create vrts for each field listed
+ncdf-build-all-vrt () {
     if [[ -z "${OVR_FIELDS}" ]]; then
         echo "no OVR_FIELDS set"
         return
@@ -58,11 +107,13 @@ overview-build-all-vrt () {
     fi
 
     for field in ${OVR_FIELDS}; do
-        overview-build-vrt "$field" "${OVR_GLOB}"
+        #ncdf-build-vrt "$field" "${OVR_GLOB}"
+        ncdf-yearly-vrt "$field"
     done
 }
 
-overview-resample-all () {
+# create overviews for each field listed
+ncdf-create-all-overviews () {
     if [[ -z "${OVR_FIELDS}" ]]; then
         echo "no OVR_FIELDS set"
         return
@@ -78,12 +129,17 @@ overview-resample-all () {
 		return
     fi
 
-    for field in ${OVR_FIELDS}; do
-        overview-resample "$field"
+    #for field in ${OVR_FIELDS}; do
+    #    ncdf-create-overviews "$field"
+    #done
+    for sensor in ${SENSORS}; do
+         ncdf-yearly-overviews "$sensor"
+
     done
 }
 
-overview-collate () {
+# Create an overview of overviews
+ncdf-overview-collate () {
     if [[ -z "${OVR_FIELDS}" ]]; then
         echo "no OVR_FIELDS set"
         return
