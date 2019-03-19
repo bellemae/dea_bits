@@ -1,10 +1,11 @@
 ## download files from s3
-        ### WOfS bands
-        # aws s3 cp  s3://dea-public-data/L2/sentinel-2-nrt/S2MSIARD/2019-02-14/ /g/data/u46/users/bt2744/work/data/floodFeb19/s2_imagery/2019-02-14/ --exclude "*" --include "*54KVF*/NBART/*" --include "*54KVE*/NBART/*" --include "*54KVD*/NBART/*" --include "*54KWF*/NBART/*" --include "*54KWE*/NBART/*" --include "*54KWD*/NBART/*" --recursive
-         ### QA bands
-        # aws s3 cp  s3://dea-public-data/L2/sentinel-2-nrt/S2MSIARD/2019-02-09/ /g/data/u46/users/bt2744/work/data/floodFeb19/s2_imagery/2019-02-09/ --exclude "*" --include "*54KVF*/QA/*NBART_CONT*" --include "*54KVF*/QA/*FMASK.TIF" --include "*54KVE*/QA/*NBART_CONT*" --include "*54KVE*/QA/*FMASK.TIF" --include "*54KVD*/QA/*NBART_CONT*" --include "*54KVD*/QA/*FMASK.TIF" --include "*54KWF*/QA/*NBART_CONT*" --include "*54KWF*/QA/*FMASK.TIF" --include "*54KWE*/QA/*NBART_CONT*" --include "*54KWE*/QA/*FMASK.TIF" --include "*54KWD*/QA/*NBART_CONT*" --include "*54KWD*/QA/*FMASK.TIF" --recursive
+  ## image bands
+    ## aws s3 cp  s3://dea-public-data/L2/sentinel-2-nrt/S2MSIARD/2019-02-14/ /g/data/u46/users/bt2744/work/data/floodFeb19/s2_imagery/2019-02-14/ --exclude "*" --include "*54KWG*/NBART/*" --include "*54KXG*/NBART/*" --include "*54KXF*/NBART/*" --include "*54KXE*/NBART/*" --include "*54KXD*/NBART/*" --include "*54KXD*/NBART/*" --recursive
+  ## QA bands
+    ## aws s3 cp  s3://dea-public-data/L2/sentinel-2-nrt/S2MSIARD/2019-02-14/ /g/data/u46/users/bt2744/work/data/floodFeb19/s2_imagery/2019-02-14/ --exclude "*" --include "*54KWG*/QA/*NBART_CONT*" --include "*54KWG*/QA/*FMASK.TIF" --include "*54KXG*/QA/*NBART_CONT*" --include "*54KXG*/QA/*FMASK.TIF" --include "*54KXF*/QA/*NBART_CONT*" --include "*54KXF*/QA/*FMASK.TIF" --include "*54KXE*/QA/*NBART_CONT*" --include "*54KXE*/QA/*FMASK.TIF" --include "*54KXD*/QA/*NBART_CONT*" --include "*54KXD*/QA/*FMASK.TIF" --include "*54KXC*/QA/*NBART_CONT*" --include "*54KXC*/QA/*FMASK.TIF" --include "*54KWC*/QA/*NBART_CONT*" --include "*54KWC*/QA/*FMASK.TIF" --recursive
+
 ## create vrt of all bands
-        #  /g/data/u46/users/bt2744/work/data/floodFeb19/s2_imagery/create_vrt.sh
+    ##  /g/data/u46/users/bt2744/work/data/floodFeb19/s2_imagery/create_vrt.sh
 ## then run this
 
 
@@ -12,18 +13,12 @@
 
 import datacube
 import sys
-import click
-
-sys.path.append('../dea-notebooks/10_Scripts')
-import DEAPlotting, SpatialTools, DEADataHandling
 
 sys.path.insert(0,'/g/data/u46/users/bt2744/work/code/wofs/') # to import wofs (and preferentially from here)
 import wofs.wofs_app
 from datacube import helpers
 from datacube.utils import geometry
-import rasterio as rio
 import xarray as xr
-import matplotlib.pyplot as plt
 
 
 # Load data from file
@@ -48,11 +43,11 @@ def _mask(water, fmask):
 
 if __name__=='__main__':
     year="2019"
-    monthdays = ['0214', '0219',]
+    monthdays = ['0214'] #, '0219',]
     for md in monthdays:
         loc="/g/data/u46/users/bt2744/work/data/floodFeb19/s2_imagery/2019-"+md[0:2]+"-"+md[2:4]+"/"
 
-        cells = ["T54KVD", "T54KVE","T54KVF","T54KWD","T54KWE","T54KWF"]
+        cells = ["T54KWG", "T54KXG", "T54KXF", "T54KXE", "T54KXD", "T54KXC"] # "T54KWC"]
 
         for cell in cells:
             infile = cell+"-"+md+".vrt"
