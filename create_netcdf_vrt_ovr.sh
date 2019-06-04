@@ -2,7 +2,7 @@
 
 # example
 #OVR_FIELDS="frequency count_wet count_clear"
-OVR_FIELDS="bcdev"
+OVR_FIELDS="edev"
 #OVR_GLOB='*FYsummary.nc'
 OVR_OUTPUT='.'
 SENSORS="ls7"
@@ -15,7 +15,7 @@ ncdf-yearly-vrt () {
     local field=$1
     local sensor=$2
 
-    for y in {1986..2018}; do
+    for y in {2013..2017}; do
         #y=2013
 
         # wet season summary vrts
@@ -38,10 +38,10 @@ ncdf-yearly-vrt () {
 }
 
 ncdf-yearly-overviews () {
-    for y in {1986..2017}; do
+    for y in {1987..2017}; do
         local sensor=$1
         local field=$2
-        # wet season summary vrts
+        # wet season summary vrtss
         #vrt_name=wofs_${y}-11_$((y + 1))-03_summary.vrt;
 
         # dry season summary vrts
@@ -74,9 +74,10 @@ ncdf-list-fields-thisdir() {
 # build vrt with list of files returned from overview-list-netcdf-field
 ncdf-build-vrt () {
     local field=$1
+    local folder=$2
 
     echo building vrt for "$field" with glob "${OVR_GLOB}"
-    ncdf-list-fields "${field}" | xargs -x --max-args 2000 gdalbuildvrt "${OVR_OUTPUT}/${field}.vrt"
+    ncdf-list-fields ${field} ${folder} | xargs -x --max-args 2000 gdalbuildvrt "${OVR_OUTPUT}/${field}.vrt"
     echo done building vrt for "$field"
 }
 
